@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="auth-shell">
+  <div class="container">
+    <div class="auth-card glass fx-card" data-tilt="6" data-reveal>
+      <div class="auth-left">
+        <div class="eyebrow">Secure access</div>
+        <h2 class="auth-title mt-3">Welcome back</h2>
+        <p class="auth-sub">Sign in to submit, track, and manage civic complaints with AI-powered triage.</p>
+
+        <div class="auth-kpis">
+          <div class="kpi"><strong>AI</strong><span>classification + priority</span></div>
+          <div class="kpi"><strong>Fast</strong><span>smart intake workflow</span></div>
+          <div class="kpi"><strong>Clear</strong><span>status tracking</span></div>
+        </div>
+      </div>
+
+      <div class="auth-right">
+        <h3 class="mb-2">Sign in</h3>
+        <p class="text-muted mb-4">Use your username and password.</p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            {{ form.username.label_tag }}
+            {{ form.username }}
+          </div>
+          <div class="mb-3">
+            {{ form.password.label_tag }}
+            <div class="field-wrap">
+              {{ form.password }}
+              <div class="field-actions">
+                <button type="button" class="icon-btn" id="togglePassword" aria-label="Toggle password visibility">👁</button>
+              </div>
+            </div>
+            <div class="caps-hint" id="capsHint">Caps Lock is on</div>
+          </div>
+
+          <button class="btn btn-cta btn-glow w-100 py-2">Login</button>
+        </form>
+
+        <div class="mt-3 text-center small" style="color: var(--muted);">
+          New here? <a href="{% url 'register' %}" class="link-light">Create an account</a>
+        </div>
+
+        {% if form.errors %}
+          <div class="mt-3">
+            <div class="alert alert-danger mb-0">
+              Please check your credentials and try again.
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function(){
+    const pwd = document.querySelector('input[type="password"]');
+    const btn = document.getElementById('togglePassword');
+    const hint = document.getElementById('capsHint');
+    if (btn && pwd) {
+      btn.addEventListener('click', () => {
+        pwd.type = (pwd.type === 'password') ? 'text' : 'password';
+      });
+      pwd.addEventListener('keyup', (e) => {
+        const on = e.getModifierState && e.getModifierState('CapsLock');
+        if (hint) hint.classList.toggle('is-on', !!on);
+      });
+    }
+  })();
+</script>
+{% endblock %}

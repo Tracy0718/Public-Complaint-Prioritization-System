@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section section-tight">
+  <div class="container" id="complaintStudio">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3" data-reveal>
+      <div>
+        <div class="eyebrow">Complaint Studio</div>
+        <h2 class="section-title mb-1">Submit a complaint</h2>
+        <p class="section-sub">Give clear details so the right team can act fast. The AI will triage it instantly.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'user_dashboard' %}" class="btn btn-outline-light btn-soft">Dashboard</a>
+        <a href="{% url 'landing' %}" class="btn btn-link btn-link-hero">Home</a>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-7">
+        <div class="glass fx-card studio-card" data-tilt="6" data-reveal>
+          <div class="studio-head">
+            <div class="studio-title">Details</div>
+            <div class="studio-sub">Fields marked by labels help routing and verification.</div>
+          </div>
+
+          <form id="complaintForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col-md-6 mb-3">{{ form.name.label_tag }}{{ form.name }}</div>
+              <div class="col-md-6 mb-3">{{ form.phone.label_tag }}{{ form.phone }}</div>
+            </div>
+            <div class="mb-3">{{ form.location.label_tag }}{{ form.location }}</div>
+            <div class="mb-3">{{ form.description.label_tag }}{{ form.description }}</div>
+
+            <div class="mb-3">
+              {{ form.image.label_tag }}
+              <div class="dropzone" id="dropzone">
+                <div class="dropzone-inner">
+                  <div class="drop-ic" aria-hidden="true"></div>
+                  <div>
+                    <div class="drop-title">Add an evidence image (optional)</div>
+                    <div class="drop-sub">Drag & drop, or click to choose a file.</div>
+                  </div>
+                  <div class="drop-cta">Browse</div>
+                </div>
+                <div class="drop-preview" id="imgPreview" style="display:none">
+                  <img id="imgPreviewEl" alt="Selected image preview">
+                </div>
+              </div>
+              <div style="display:none">{{ form.image }}</div>
+              <div class="small mt-2" style="color: var(--muted2);">Tip: clear photos improve verification and priority accuracy.</div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <button class="btn btn-cta btn-glow px-4" id="submitBtn" type="submit">
+                <span class="btn-label">Submit</span>
+                <span class="btn-spinner" aria-hidden="true"></span>
+              </button>
+              <div class="small" style="color: var(--muted2);">Your submission is tracked in your dashboard.</div>
+            </div>
+          </form>
+        </div>
+
+        <div id="result" class="mt-3" data-reveal></div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="glass fx-card studio-card" data-tilt="6" data-reveal>
+          <div class="studio-head">
+            <div class="studio-title">Quality checklist</div>
+            <div class="studio-sub">Make it actionable on the first read.</div>
+          </div>
+
+          <div class="checklist">
+            <div class="check">
+              <div class="check-dot" aria-hidden="true"></div>
+              <div>
+                <div class="check-title">Be specific</div>
+                <div class="check-sub">Include what happened, where, and when.</div>
+              </div>
+            </div>
+            <div class="check">
+              <div class="check-dot" aria-hidden="true"></div>
+              <div>
+                <div class="check-title">Add landmarks</div>
+                <div class="check-sub">Nearest street / building helps routing.</div>
+              </div>
+            </div>
+            <div class="check">
+              <div class="check-dot" aria-hidden="true"></div>
+              <div>
+                <div class="check-title">Safety first</div>
+                <div class="check-sub">Downed lines, fire hazards → critical priority.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider my-3"></div>
+
+          <div class="mini-panel">
+            <div class="mini-title">Live AI preview</div>
+            <div class="mini-sub">After submission you’ll get category + priority instantly.</div>
+            <div class="mini-badges">
+              <span class="badge bg-info">Medium</span>
+              <span class="badge bg-warning text-dark">High</span>
+              <span class="badge bg-danger">Critical</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass fx-card studio-card mt-3" data-tilt="6" data-reveal>
+          <div class="studio-head">
+            <div class="studio-title">Smart suggestions</div>
+            <div class="studio-sub">We’ll auto-highlight missing context.</div>
+          </div>
+          <div class="suggestions small" id="suggestions" style="color: var(--muted);">
+            Start typing a description to see suggestions.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function(){
+    const dz = document.getElementById('dropzone');
+    const input = document.querySelector('input[type="file"][name="image"]');
+    const prev = document.getElementById('imgPreview');
+    const prevEl = document.getElementById('imgPreviewEl');
+    const desc = document.querySelector('textarea[name="description"]');
+    const sugg = document.getElementById('suggestions');
+
+    function setFile(file){
+      if (!input) return;
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      const url = URL.createObjectURL(file);
+      if (prev && prevEl) {
+        prevEl.src = url;
+        prev.style.display = 'block';
+      }
+      if (window.toast) window.toast('Image attached. Nice—this improves verification.', { level: 'info', title: 'Evidence' });
+    }
+
+    function openPicker(){
+      input?.click();
+    }
+
+    dz?.addEventListener('click', openPicker);
+    dz?.addEventListener('dragover', (e)=>{ e.preventDefault(); dz.classList.add('is-over'); });
+    dz?.addEventListener('dragleave', ()=> dz.classList.remove('is-over'));
+    dz?.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      dz.classList.remove('is-over');
+      const f = e.dataTransfer?.files?.[0];
+      if (f) setFile(f);
+    });
+
+    input?.addEventListener('change', ()=>{
+      const f = input.files?.[0];
+      if (f) setFile(f);
+    });
+
+    function updateSuggestions(){
+      const v = (desc?.value || '').toLowerCase();
+      if (!sugg) return;
+      if (!v.trim()) { sugg.textContent = 'Start typing a description to see suggestions.'; return; }
+      const tips = [];
+      if (!/(near|beside|opposite|behind|in front of|landmark|junction|street|road|ave|sector|block)/.test(v)) tips.push('Add a nearby landmark or intersection to speed routing.');
+      if (!/(today|yesterday|\b\d{1,2}:\d{2}\b|\b(am|pm)\b|\bjan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/.test(v)) tips.push('Include when you first noticed it (time/date).');
+      if (v.length < 40) tips.push('Add a bit more detail (what exactly is happening?).');
+      if (tips.length === 0) tips.push('Looks great—clear and actionable.');
+      sugg.innerHTML = '<ul class="m-0 ps-3">' + tips.map(t => `<li>${t}</li>`).join('') + '</ul>';
+    }
+    desc?.addEventListener('input', updateSuggestions);
+    updateSuggestions();
+  })();
+</script>
+{% endblock %}

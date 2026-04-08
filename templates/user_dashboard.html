@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section section-tight">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3" data-reveal>
+      <div>
+        <div class="eyebrow">Dashboard</div>
+        <h2 class="section-title mb-1">Your submitted complaints</h2>
+        <p class="section-sub">Search, filter, and track progress in one clean view.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'submit_complaint' %}" class="btn btn-cta btn-glow">New complaint</a>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3" data-reveal>
+      <div class="col-md-4">
+        <div class="glass fx-card stat-card" data-tilt="6">
+          <div class="stat-k">Total</div>
+          <div class="stat-v" id="statTotal">—</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="glass fx-card stat-card" data-tilt="6">
+          <div class="stat-k">Open</div>
+          <div class="stat-v" id="statOpen">—</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="glass fx-card stat-card" data-tilt="6">
+          <div class="stat-k">Completed</div>
+          <div class="stat-v" id="statDone">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass fx-card dash-tools" data-tilt="4" data-reveal>
+      <div class="row g-2 align-items-center">
+        <div class="col-md-6">
+          <input type="search" class="form-control" id="dashSearch" placeholder="Search by ID, category, location..." autocomplete="off">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="dashStatus">
+            <option value="">All statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Verified">Verified</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2 justify-content-md-end">
+          <button type="button" class="btn btn-outline-light btn-soft w-100" id="dashReset">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-3" id="dashGrid">
+      {% for c in comps %}
+      <div class="col-md-6 dash-item" data-status="{{ c.status }}" data-search="{{ c.complaint_id }} {{ c.category }} {{ c.location }} {{ c.priority }}">
+        <div class="card mb-3 p-3 glass hover-card fx-card" data-tilt="6" data-reveal>
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h5 class="text-white mb-1">{{ c.complaint_id }} <span style="opacity:.8">•</span> {{ c.category }}</h5>
+              <p class="text-light small mb-0">{{ c.created_at|date:'M d, Y H:i' }} | {{ c.location }}</p>
+            </div>
+            <div>
+              {% if c.priority == 'Critical' %}
+                <span class="badge bg-danger">{{ c.priority }}</span>
+              {% elif c.priority == 'High' %}
+                <span class="badge bg-warning text-dark">{{ c.priority }}</span>
+              {% elif c.priority == 'Medium' %}
+                <span class="badge bg-info">{{ c.priority }}</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ c.priority }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="mb-2">
+            {% if c.status == 'Verified' %}
+              <span class="badge bg-success">Verified</span>
+            {% elif c.status == 'In Progress' %}
+              <span class="badge bg-info">{{ c.status }}</span>
+            {% else %}
+              <span class="badge bg-light text-dark">{{ c.status }}</span>
+            {% endif %}
+          </div>
+          <p class="text-white" style="font-size:0.95rem; line-height:1.5; margin-bottom:1rem;">{{ c.description|truncatechars:220 }}</p>
+          <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'track_complaint' c.id %}" class="btn btn-sm btn-outline-light btn-soft">View</a>
+            <a href="{% url 'edit_complaint' c.id %}" class="btn btn-sm btn-warning">Edit</a>
+            <a href="{% url 'delete_complaint' c.id %}" class="btn btn-sm btn-danger">Delete</a>
+            {% if c.image %}<a href="{{ c.image.url }}" target="_blank" class="btn btn-sm btn-outline-secondary btn-soft">Image</a>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12" data-reveal>
+        <div class="glass fx-card empty-state" data-tilt="6">
+          <div class="empty-ic" aria-hidden="true"></div>
+          <div>
+            <div class="empty-title">No complaints yet</div>
+            <div class="empty-sub">Submit your first complaint and the AI will triage it instantly.</div>
+            <div class="mt-3">
+              <a href="{% url 'submit_complaint' %}" class="btn btn-cta btn-glow">Submit now</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (function(){
+    const items = Array.from(document.querySelectorAll('.dash-item'));
+    const search = document.getElementById('dashSearch');
+    const status = document.getElementById('dashStatus');
+    const reset = document.getElementById('dashReset');
+
+    function computeStats(){
+      const total = items.length;
+      const done = items.filter(i => (i.getAttribute('data-status') || '') === 'Verified').length;
+      const open = total - done;
+      const elT = document.getElementById('statTotal');
+      const elO = document.getElementById('statOpen');
+      const elD = document.getElementById('statDone');
+      if (elT) elT.textContent = total;
+      if (elO) elO.textContent = open;
+      if (elD) elD.textContent = done;
+    }
+
+    function apply(){
+      const q = (search?.value || '').trim().toLowerCase();
+      const st = status?.value || '';
+      let shown = 0;
+      items.forEach((el) => {
+        const hay = (el.getAttribute('data-search') || '').toLowerCase();
+        const okQ = !q || hay.includes(q);
+        const okS = !st || (el.getAttribute('data-status') === st);
+        const ok = okQ && okS;
+        el.style.display = ok ? '' : 'none';
+        if (ok) shown++;
+      });
+      if (window.toast && (q || st)) window.toast(`Showing <strong>${shown}</strong> result(s).`, { level: 'info', title: 'Filtered', timeoutMs: 1800 });
+    }
+
+    computeStats();
+    search?.addEventListener('input', apply);
+    status?.addEventListener('change', apply);
+    reset?.addEventListener('click', () => {
+      if (search) search.value = '';
+      if (status) status.value = '';
+      apply();
+    });
+  })();
+</script>
+{% endblock %}

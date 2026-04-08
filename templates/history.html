@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Your Complaints</h3>
+<div class="row">
+  {% for c in comps %}
+  <div class="col-md-6">
+    <div class="card mb-3 p-3">
+      <h5>{{ c.complaint_id }} - {{ c.category }} <span class="badge bg-{{ 'danger' if c.priority=='High' else 'warning' if c.priority=='Medium' else 'secondary' }}">{{ c.priority }}</span></h5>
+      <p>{{ c.description|truncatechars:150 }}</p>
+      <a href="{% url 'track_complaint' c.id %}" class="btn btn-sm btn-outline-primary">View</a>
+    </div>
+  </div>
+  {% empty %}
+  <p>No complaints yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

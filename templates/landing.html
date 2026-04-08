@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero hero-premium">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+  </div>
+
+  <div class="container position-relative">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <div class="eyebrow" data-reveal>AI-powered civic operations</div>
+        <h1 class="hero-title hero-title-xl" data-reveal>Make your city’s issues <span class="text-gradient">impossible to ignore</span>.</h1>
+        <p class="lead hero-sub hero-sub-xl" data-reveal>
+          Submit civic complaints in seconds. Our AI classifies and prioritizes them so teams can respond faster with clarity, accountability, and analytics.
+        </p>
+
+        <div class="d-flex flex-wrap gap-3 mt-4" data-reveal>
+          <a href="{% url 'register' %}" class="btn btn-cta btn-lg btn-glow">Get Started</a>
+          <a href="{% url 'submit_complaint' %}" class="btn btn-outline-light btn-lg btn-soft">Submit a Complaint</a>
+          <a href="#how" class="btn btn-link btn-link-hero">How it works</a>
+        </div>
+
+        <div class="mt-4 hero-trust" data-reveal>
+          <div class="trust-pill"><span class="trust-dot"></span> Built for real-world municipal workflows</div>
+          <div class="trust-pill"><span class="trust-dot"></span> Secure by default • Audit-friendly</div>
+          <div class="trust-pill"><span class="trust-dot"></span> Fast triage with consistent prioritization</div>
+        </div>
+
+        <div class="mt-5 features">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="feature-card glass fx-card" data-tilt="10" data-reveal>
+                <div class="feature-icon fi-1" aria-hidden="true"></div>
+                <strong>AI Classification</strong>
+                <div class="muted">Road, water, power, garbage & more</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="feature-card glass fx-card" data-tilt="10" data-reveal>
+                <div class="feature-icon fi-2" aria-hidden="true"></div>
+                <strong>Smart Prioritization</strong>
+                <div class="muted">Critical/High/Medium/Low signals</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="feature-card glass fx-card" data-tilt="10" data-reveal>
+                <div class="feature-icon fi-3" aria-hidden="true"></div>
+                <strong>Admin Analytics</strong>
+                <div class="muted">Charts, filters & operational insights</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="hero-panel glass fx-card float-slow" data-tilt="8" data-reveal>
+          <div class="panel-header d-flex align-items-center justify-content-between">
+            <span>Live triage preview</span>
+            <span class="panel-chip">Realtime</span>
+          </div>
+          <div class="panel-body">
+            <div class="triage-item">
+              <div class="triage-dot pri-medium" aria-hidden="true"></div>
+              <div class="triage-main">
+                <div class="triage-title">Potholes on Main St.</div>
+                <div class="triage-meta">Priority: Medium • Category: Road Damage</div>
+              </div>
+              <div class="triage-badge badge bg-info">Medium</div>
+            </div>
+
+            <div class="triage-item">
+              <div class="triage-dot pri-high" aria-hidden="true"></div>
+              <div class="triage-main">
+                <div class="triage-title">Water pipe leakage</div>
+                <div class="triage-meta">Priority: High • Category: Water Supply</div>
+              </div>
+              <div class="triage-badge badge bg-warning text-dark">High</div>
+            </div>
+
+            <div class="triage-item">
+              <div class="triage-dot pri-critical" aria-hidden="true"></div>
+              <div class="triage-main">
+                <div class="triage-title">Downed power line</div>
+                <div class="triage-meta">Priority: Critical • Category: Power Outage</div>
+              </div>
+              <div class="triage-badge badge bg-danger">Critical</div>
+            </div>
+
+            <div class="hero-metrics mt-3">
+              <div class="metric">
+                <div class="metric-value">≤ 10s</div>
+                <div class="metric-label">submission</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value">AI</div>
+                <div class="metric-label">triage</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value">24/7</div>
+                <div class="metric-label">intake</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-side-note" data-reveal>
+          <div class="side-badge">New</div>
+          <div>
+            <div class="side-title">Frictionless tracking</div>
+            <div class="side-sub">Users can monitor status changes with a single link.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tight" id="how">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <h2 class="section-title">A modern workflow from intake to resolution</h2>
+      <p class="section-sub">Designed to reduce noise, standardize triage, and give teams a clean operational view.</p>
+    </div>
+
+    <div class="row g-3 mt-2">
+      <div class="col-md-4">
+        <div class="glass fx-card step-card" data-tilt="8" data-reveal>
+          <div class="step-num">01</div>
+          <div class="step-title">Submit</div>
+          <div class="step-sub">Residents attach a description, location, and optional image.</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="glass fx-card step-card" data-tilt="8" data-reveal>
+          <div class="step-num">02</div>
+          <div class="step-title">AI triage</div>
+          <div class="step-sub">Category + priority assigned consistently to accelerate routing.</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="glass fx-card step-card" data-tilt="8" data-reveal>
+          <div class="step-num">03</div>
+          <div class="step-title">Operate</div>
+          <div class="step-sub">Admins filter, analyze trends, and track completion—fast.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-band mt-4" data-reveal>
+      <div>
+        <div class="cta-title">Ready to see it in action?</div>
+        <div class="cta-sub">Start with a real complaint and watch the AI triage it instantly.</div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'submit_complaint' %}" class="btn btn-cta btn-glow">Submit now</a>
+        <a href="{% url 'login' %}" class="btn btn-outline-light btn-soft">Sign in</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

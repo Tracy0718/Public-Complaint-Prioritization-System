@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Admin Dashboard</h3>
+  <div>
+    <span class="me-3">Total: <strong>{{ total }}</strong></span>
+    <span>High Priority: <strong class="text-danger">{{ high }}</strong></span>
+  </div>
+</div>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card p-3 glass">
+      <h6>Filters</h6>
+      <div class="mb-2">
+        <select id="filterCategory" class="form-select">
+          <option value="">All Categories</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <select id="filterPriority" class="form-select">
+          <option value="">All Priorities</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <select id="filterStatus" class="form-select">
+          <option value="">All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Verified">Completed</option>
+        </select>
+      </div>
+      <button id="applyFilters" class="btn btn-sm btn-primary w-100">Apply</button>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card p-3 glass">
+      <h6>Complaints</h6>
+      <div id="complaintsTable" class="table-responsive mt-2"></div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4 g-3">
+  <div class="col-md-4 card p-3 glass">
+    <canvas id="catChart"></canvas>
+  </div>
+  <div class="col-md-4 card p-3 glass">
+    <canvas id="priChart"></canvas>
+  </div>
+  <div class="col-md-4 card p-3 glass">
+    <canvas id="monthChart"></canvas>
+  </div>
+</div>
+
+<script>
+const categories = {{ categories|safe }};
+const priorities = {{ priorities|safe }};
+const monthly = {{ monthly|safe }};
+
+// populate category filter
+const catSelect = document.getElementById('filterCategory');
+categories.forEach(c=>{ const opt=document.createElement('option'); opt.value=c.category; opt.text=c.category; catSelect.add(opt); });
+
+async function loadComplaints(){
+  const params = new URLSearchParams();
+  const cat = document.getElementById('filterCategory').value;
+  const pri = document.getElementById('filterPriority').value;
+  const status = document.getElementById('filterStatus').value;
+  if(cat) params.set('category', cat);
+  if(pri) params.set('priority', pri);
+  if(status) params.set('status', status);
+  const res = await fetch('/api/complaints-data/?' + params.toString());
+  const data = await res.json();
+  const container = document.getElementById('complaintsTable');
+  if(!data.length){ container.innerHTML = '<p class="text-muted">No complaints found for filters.</p>'; return; }
+  let html = '<table class="table table-hover"><thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Priority</th><th>Status</th><th>Created</th><th>Description</th><th>Actions</th></tr></thead><tbody>';
+  data.forEach(d=>{
+    let statusBadge;
+    if (d.status === 'Verified') {
+      statusBadge = '<span class="badge bg-success">Completed</span>';
+    } else if (d.status === 'In Progress') {
+      statusBadge = '<span class="badge bg-info">In Progress</span>';
+    } else {
+      statusBadge = '<span class="badge bg-light text-dark">Pending</span>';
+    }
+    let priBadge;
+    if (d.priority === 'Critical') {
+      priBadge = '<span class="badge bg-danger">Critical</span>';
+    } else if (d.priority === 'High') {
+      priBadge = '<span class="badge bg-warning text-dark">High</span>';
+    } else if (d.priority === 'Medium') {
+      priBadge = '<span class="badge bg-info">Medium</span>';
+    } else {
+      priBadge = '<span class="badge bg-secondary">Low</span>';
+    }
+    const verifyButton = d.status === 'Verified'
+      ? ''
+      : `<button class="btn btn-sm btn-success verify-btn" data-id="${d.id}" style="width:100%; margin-bottom:0.25rem;">Mark Verified</button>`;
+    html += `<tr><td>${d.id.split('-')[0].toUpperCase()}</td><td>${d.name}</td><td>${d.category}</td><td>${priBadge}</td><td>${statusBadge}</td><td>${new Date(d.created_at).toLocaleString()}</td><td style="font-size:0.85rem; white-space:normal; max-width:250px; color:#fff;">${d.description.substring(0,100)}...</td><td>${verifyButton}<select class="form-select form-select-sm status-select" data-id="${d.id}" style="margin-bottom:0.25rem;"><option value="Pending" ${d.status=='Pending'?'selected':''}>Pending</option><option value="In Progress" ${d.status=='In Progress'?'selected':''}>In Progress</option><option value="Verified" ${d.status=='Verified'?'selected':''}>Completed</option></select><button class="btn btn-sm btn-danger delete-btn" data-id="${d.id}" style="width:100%;">Delete</button> <a class="btn btn-sm btn-outline-primary" href="/track/${d.id}" style="width:100%; margin-top:0.25rem;">View</a></td></tr>`;
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+  document.querySelectorAll('.status-select').forEach(s=> s.addEventListener('change', onStatusChange));
+  document.querySelectorAll('.delete-btn').forEach(b=> b.addEventListener('click', onDelete));
+  document.querySelectorAll('.verify-btn').forEach(b=> b.addEventListener('click', onVerify));
+}
+
+async function onStatusChange(e){
+  const id = e.target.dataset.id;
+  const value = e.target.value;
+  await fetch('/admin-dashboard/complaint-action/', {method:'POST', headers: {'Content-Type':'application/json','X-CSRFToken': getCSRF()}, body: JSON.stringify({action:'status', id:id, value:value})});
+  loadComplaints();
+}
+
+async function onVerify(e){
+  const id = e.target.dataset.id;
+  if(!confirm('Mark this complaint as verified/completed?')) return;
+  await fetch('/admin-dashboard/complaint-action/', {
+    method:'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken': getCSRF()},
+    body: JSON.stringify({action:'verify', id:id})
+  });
+  loadComplaints();
+}
+
+async function onDelete(e){
+  if(!confirm('Delete this complaint?')) return;
+  const id = e.target.dataset.id;
+  await fetch('/admin-dashboard/complaint-action/', {method:'POST', headers: {'Content-Type':'application/json','X-CSRFToken': getCSRF()}, body: JSON.stringify({action:'delete', id:id})});
+  loadComplaints();
+}
+
+document.getElementById('applyFilters').addEventListener('click', loadComplaints);
+window.addEventListener('load', ()=>{ loadComplaints(); });
+
+const catLabels = categories.map(c=>c.category);
+const catData = categories.map(c=>c.count);
+const priLabels = priorities.map(p=>p.priority);
+const priData = priorities.map(p=>p.count);
+const monLabels = monthly.map(m=>m.month);
+const monData = monthly.map(m=>m.count);
+
+new Chart(document.getElementById('catChart'), { type: 'pie', data: { labels: catLabels, datasets:[{data:catData, backgroundColor:['#6f42c1','#0d6efd','#198754','#ffc107','#dc3545']}] }});
+new Chart(document.getElementById('priChart'), { type: 'bar', data: { labels: priLabels, datasets:[{label:'Count', data:priData, backgroundColor:'#0d6efd'}] }});
+new Chart(document.getElementById('monthChart'), { type: 'line', data: { labels: monLabels, datasets:[{label:'Monthly', data:monData, borderColor:'#198754', fill:false}] }});
+
+function getCSRF(){ return document.querySelector('[name=csrfmiddlewaretoken]').value; }
+</script>
+{% endblock %}

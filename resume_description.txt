@@ -1,0 +1,1 @@
+AI Public Complaint Prioritization System — Full-stack Django app integrating a TF-IDF + Logistic Regression model to automatically classify citizen complaints, predict urgency levels, and route issues to appropriate departments. Features user registration, image uploads, AJAX submission, admin analytics with Chart.js, and a modern responsive UI.

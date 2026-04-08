@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card p-4 glass" style="max-width:500px; margin:3rem auto; text-align:center;">
+  <h3 class="text-white mb-3">Delete Complaint</h3>
+  
+  <div class="alert alert-danger mb-4" style="background-color: rgba(220,53,69,0.2); border: 1px solid rgba(220,53,69,0.5); color: #ff6b6b;">
+    <strong>Warning!</strong> This action cannot be undone.
+  </div>
+  
+  <p class="text-light mb-3">Are you sure you want to delete complaint <strong class="text-white">{{ comp.complaint_id }}</strong>?</p>
+  
+  <p class="text-light small mb-4">Category: <strong class="text-white">{{ comp.category }}</strong></p>
+  
+  <form method="post" class="d-flex gap-2 justify-content-center">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="{% url 'track_complaint' comp.id %}" class="btn btn-outline-light">Cancel</a>
+  </form>
+</div>
+{% endblock %}
