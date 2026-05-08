@@ -13,12 +13,13 @@ INSTALLED_APPS = [
     'complaints',
 ]
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware','django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware','django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware','django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+CSRF_TRUSTED_ORIGINS = [
+    'https://public-complaint-prioritization-system.onrender.com',
 ]
+
+# Render (and many proxies) terminate TLS and forward proto headers.
+# This keeps Django's "secure" detection and CSRF referer checks correct.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ROOT_URLCONF = 'ai_complaints.urls'
 

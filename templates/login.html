@@ -24,6 +24,7 @@
           <div class="mb-3">
             {{ form.username.label_tag }}
             {{ form.username }}
+            {% if form.username.errors %}<div class="field-error">{{ form.username.errors|striptags }}</div>{% endif %}
           </div>
           <div class="mb-3">
             {{ form.password.label_tag }}
@@ -34,6 +35,7 @@
               </div>
             </div>
             <div class="caps-hint" id="capsHint">Caps Lock is on</div>
+            {% if form.password.errors %}<div class="field-error">{{ form.password.errors|striptags }}</div>{% endif %}
           </div>
 
           <button class="btn btn-cta btn-glow w-100 py-2">Login</button>
@@ -43,11 +45,9 @@
           New here? <a href="{% url 'register' %}" class="link-light">Create an account</a>
         </div>
 
-        {% if form.errors %}
+        {% if form.non_field_errors %}
           <div class="mt-3">
-            <div class="alert alert-danger mb-0">
-              Please check your credentials and try again.
-            </div>
+            <div class="alert alert-danger mb-0">{{ form.non_field_errors|striptags }}</div>
           </div>
         {% endif %}
       </div>
